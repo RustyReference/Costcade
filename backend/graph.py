@@ -9,7 +9,7 @@ DATA = Path(__file__).parent / "building.json"
 def load_graph(path=DATA) -> nx.DiGraph:
     """Build the dependency graph. An edge A -> B means a failure in A reaches B."""
     data = json.loads(Path(path).read_text())
-    G = nx.DiGraph(sla=data["sla"], repair_min=data["repair_min"])  # reachable as G.graph[...]
+    G = nx.DiGraph(slas=data["slas"], repair_min=data["repair_min"], actions=data["actions"])  # reachable as G.graph[...]
     for n in data["nodes"]:
         G.add_node(n["id"], **n)
     for e in data["edges"]:

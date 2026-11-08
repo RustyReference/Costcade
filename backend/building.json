@@ -12,7 +12,8 @@
     {"id": "air",      "label": "Air handlers",    "kind": "cooling"},
     {"id": "racks",    "label": "Server racks",    "kind": "tenant"},
     {"id": "sensors",  "label": "Sensors",         "kind": "control"},
-    {"id": "sla",      "label": "Tenant A SLA",    "kind": "tenant"}
+    {"id": "sla",      "label": "Tenant A SLA",    "kind": "tenant"},
+    {"id": "sla_net",  "label": "Network SLA",     "kind": "tenant"}
   ],
   "edges": [
     {"source": "water",    "target": "tower",    "type": "cooling",  "delay_min": 0, "tier": "assumed"},
@@ -29,8 +30,16 @@
     {"source": "pdu",      "target": "racks",    "type": "power",    "delay_min": 0, "tier": "assumed"},
     {"source": "sensors",  "target": "bms",      "type": "data",     "delay_min": 0, "tier": "assumed", "hard": false},
     {"source": "air",      "target": "racks",    "type": "cooling",  "delay_min": 4, "tier": "assumed"},
-    {"source": "racks",    "target": "sla",      "type": "contract", "delay_min": 0, "tier": "assumed"}
+    {"source": "racks",    "target": "sla",      "type": "contract", "delay_min": 0, "tier": "assumed"},
+    {"source": "network",  "target": "sla_net",  "type": "contract", "delay_min": 0, "tier": "assumed"}
   ],
-  "sla": {"node": "sla", "mrc": 50000, "method": "stepped", "allowance_min": 43.2, "step_pct": 5, "step_min": 30, "cap_pct": 100, "tier": "assumed"},
-  "repair_min": 180
+  "slas": [
+    {"id": "tenant_a", "node": "sla",     "mrc": 50000, "method": "stepped",  "allowance_min": 43.2, "step_pct": 5, "step_min": 30, "cap_pct": 100, "tier": "assumed"},
+    {"id": "network",  "node": "sla_net", "mrc": 10000, "method": "pro_rata", "allowance_min": 4.32, "cap_pct": 100, "tier": "assumed"}
+  ],
+  "repair_min": 180,
+  "actions": [
+    {"id": "start_ch2", "label": "Start standby chiller (CH-2)", "target_node": "chillers", "duration_min": 5,  "tier": "assumed"},
+    {"id": "rental",    "label": "Dispatch rental chiller",      "target_node": "chillers", "duration_min": 90, "tier": "assumed"}
+  ]
 }

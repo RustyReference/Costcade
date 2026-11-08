@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from graph import load_graph, propagate
-from cost import projected_cost, accrued_cost, time_to_breach
+from cost import projected_cost, accrued_cost, time_to_breach, rank_actions
+import networkx as nx
 import time
 import math
 
@@ -42,16 +43,32 @@ async def building():
         {"source": u, "target": v, "type": d["type"]}
         for u, v, d in G.edges(data=True)
     ]
-    clause = G.graph["sla"]
     repair = G.graph["repair_min"]
-    t_sla = T[clause["node"]]
     start = min(faults.values(), default=0)  # earliest fault starts the repair clock
+    slas = []
+    per_sla = []
+    for c in G.graph["slas"]:
+        t_sla = T[c["node"]]
+        slas.append((c["id"], t_sla, c, nx.ancestors(G, c["node"])))  # ancestors: nodes whose repair can help this SLA
+        per_sla.append({
+            "id": c["id"],
+            "projected": projected_cost(t_sla, start, repair, c),
+            "accrued": accrued_cost(t_sla, t, start, repair, c),
+            "breach_in_min": time_to_breach(t_sla, t, c),
+        })
+    breaches = [s["breach_in_min"] for s in per_sla if s["breach_in_min"] is not None]
     cost = {
-        "projected": projected_cost(t_sla, start, repair, clause),
-        "accrued": accrued_cost(t_sla, t, start, repair, clause),
-        "breach_in_min": time_to_breach(t_sla, t, clause),
+        "total": {
+            "projected": sum(s["projected"] for s in per_sla),
+            "accrued": sum(s["accrued"] for s in per_sla),
+            "breach_in_min": min(breaches, default=None),  # soonest breach across SLAs
+        },
+        "slas": per_sla,
     }
-    return {"now_min": t, "nodes": nodes, "edges": edges, "cost": cost}
+    helpable = set().union(*(s[3] for s in slas))
+    applicable = [a for a in G.graph["actions"] if a["target_node"] in helpable and T[a["target_node"]] < math.inf]
+    actions = rank_actions(applicable, slas, t, start, repair)
+    return {"now_min": t, "nodes": nodes, "edges": edges, "cost": cost, "actions": actions}
 
 @app.post("/api/fault")
 async def fault(node_id: str):
