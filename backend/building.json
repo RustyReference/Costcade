@@ -1,0 +1,36 @@
+{
+  "nodes": [
+    {"id": "water",    "label": "Water supply",    "kind": "cooling"},
+    {"id": "utility",  "label": "Utility power",   "kind": "power"},
+    {"id": "vendor",   "label": "Vendor access",   "kind": "control"},
+    {"id": "tower",    "label": "Cooling tower",   "kind": "cooling"},
+    {"id": "ups",      "label": "UPS + generator", "kind": "power"},
+    {"id": "network",  "label": "Network",         "kind": "control"},
+    {"id": "chillers", "label": "Chillers",        "kind": "cooling"},
+    {"id": "pdu",      "label": "PDU",             "kind": "power"},
+    {"id": "bms",      "label": "BMS",             "kind": "control"},
+    {"id": "air",      "label": "Air handlers",    "kind": "cooling"},
+    {"id": "racks",    "label": "Server racks",    "kind": "tenant"},
+    {"id": "sensors",  "label": "Sensors",         "kind": "control"},
+    {"id": "sla",      "label": "Tenant A SLA",    "kind": "tenant"}
+  ],
+  "edges": [
+    {"source": "water",    "target": "tower",    "type": "cooling",  "delay_min": 0, "tier": "assumed"},
+    {"source": "utility",  "target": "ups",      "type": "power",    "delay_min": 0, "tier": "assumed"},
+    {"source": "vendor",   "target": "network",  "type": "data",     "delay_min": 0, "tier": "assumed"},
+    {"source": "ups",      "target": "tower",    "type": "power",    "delay_min": 0, "tier": "assumed"},
+    {"source": "ups",      "target": "network",  "type": "power",    "delay_min": 0, "tier": "assumed"},
+    {"source": "tower",    "target": "chillers", "type": "cooling",  "delay_min": 0, "tier": "assumed"},
+    {"source": "ups",      "target": "pdu",      "type": "power",    "delay_min": 0, "tier": "assumed"},
+    {"source": "network",  "target": "bms",      "type": "control",  "delay_min": 0, "tier": "assumed"},
+    {"source": "bms",      "target": "chillers", "type": "control",  "delay_min": 0, "tier": "assumed"},
+    {"source": "pdu",      "target": "chillers", "type": "power",    "delay_min": 0, "tier": "assumed"},
+    {"source": "chillers", "target": "air",      "type": "cooling",  "delay_min": 2, "tier": "assumed"},
+    {"source": "pdu",      "target": "racks",    "type": "power",    "delay_min": 0, "tier": "assumed"},
+    {"source": "sensors",  "target": "bms",      "type": "data",     "delay_min": 0, "tier": "assumed", "hard": false},
+    {"source": "air",      "target": "racks",    "type": "cooling",  "delay_min": 4, "tier": "assumed"},
+    {"source": "racks",    "target": "sla",      "type": "contract", "delay_min": 0, "tier": "assumed"}
+  ],
+  "sla": {"node": "sla", "mrc": 50000, "method": "stepped", "allowance_min": 43.2, "step_pct": 5, "step_min": 30, "cap_pct": 100, "tier": "assumed"},
+  "repair_min": 180
+}
