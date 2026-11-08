@@ -1,4 +1,7 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from graph import load_graph, propagate
 from cost import projected_cost, accrued_cost, time_to_breach, rank_actions
 import networkx as nx
@@ -6,6 +9,8 @@ import time
 import math
 
 app = FastAPI()
+FRONTEND = Path(__file__).parent.parent / "frontend"
+app.mount("/static", StaticFiles(directory=FRONTEND), name="static")
 
 START = time.monotonic()
 SPEED = 60 # 60 seconds a minute to fast-forward the simulation
@@ -29,7 +34,7 @@ def status(node: str, t_fail: float, t: float) -> dict:
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return FileResponse(FRONTEND / "index.html")
 
 @app.get("/api/building")
 async def building():
@@ -40,7 +45,7 @@ async def building():
         for n, d in G.nodes(data=True)
     ]
     edges = [
-        {"source": u, "target": v, "type": d["type"]}
+        {"source": u, "target": v, "type": d["type"], "delay_min": d["delay_min"], "tier": d["tier"], "hard": d.get("hard", True)}
         for u, v, d in G.edges(data=True)
     ]
     repair = G.graph["repair_min"]

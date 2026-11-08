@@ -18,7 +18,8 @@
   "edges": [
     {"source": "water",    "target": "tower",    "type": "cooling",  "delay_min": 0, "tier": "assumed"},
     {"source": "utility",  "target": "ups",      "type": "power",    "delay_min": 0, "tier": "assumed"},
-    {"source": "vendor",   "target": "network",  "type": "data",     "delay_min": 0, "tier": "assumed"},
+    {"source": "vendor",   "target": "network",  "type": "data",     "delay_min": 0, "tier": "evidence", "hard": false, "citation": "Krebs on Security, 2014-02-05, and CBS News coverage of the Senate Commerce report: stolen HVAC-vendor credentials gave access to Target's network"},
+    {"source": "vendor",   "target": "bms",      "type": "control",  "delay_min": 5, "tier": "assumed", "citation": "Consequence only: CISA ICSA-26-069-03 (CVE-2026-3611), a reachable BMS controller can be controlled. That the vendor can reach the BMS, and the 5 min attacker delay, are assumed"},
     {"source": "ups",      "target": "tower",    "type": "power",    "delay_min": 0, "tier": "assumed"},
     {"source": "ups",      "target": "network",  "type": "power",    "delay_min": 0, "tier": "assumed"},
     {"source": "tower",    "target": "chillers", "type": "cooling",  "delay_min": 0, "tier": "assumed"},
