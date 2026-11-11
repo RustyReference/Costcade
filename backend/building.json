@@ -1,0 +1,46 @@
+{
+  "nodes": [
+    {"id": "water",    "label": "Water supply",    "kind": "cooling"},
+    {"id": "utility",  "label": "Utility power",   "kind": "power"},
+    {"id": "vendor",   "label": "Vendor access",   "kind": "control"},
+    {"id": "tower",    "label": "Cooling tower",   "kind": "cooling"},
+    {"id": "ups",      "label": "UPS + generator", "kind": "power"},
+    {"id": "network",  "label": "Network",         "kind": "control"},
+    {"id": "chillers", "label": "Chillers",        "kind": "cooling"},
+    {"id": "pdu",      "label": "PDU",             "kind": "power"},
+    {"id": "bms",      "label": "BMS",             "kind": "control"},
+    {"id": "air",      "label": "Air handlers",    "kind": "cooling"},
+    {"id": "racks",    "label": "Server racks",    "kind": "tenant"},
+    {"id": "sensors",  "label": "Sensors",         "kind": "control"},
+    {"id": "sla",      "label": "Tenant A SLA",    "kind": "tenant"},
+    {"id": "sla_net",  "label": "Network SLA",     "kind": "tenant"}
+  ],
+  "edges": [
+    {"source": "water",    "target": "tower",    "type": "cooling",  "delay_min": 0, "tier": "assumed"},
+    {"source": "utility",  "target": "ups",      "type": "power",    "delay_min": 0, "tier": "assumed"},
+    {"source": "vendor",   "target": "network",  "type": "data",     "delay_min": 0, "tier": "evidence", "hard": false, "citation": "Krebs on Security, 2014-02-05, and CBS News coverage of the Senate Commerce report: stolen HVAC-vendor credentials gave access to Target's network"},
+    {"source": "vendor",   "target": "bms",      "type": "control",  "delay_min": 5, "tier": "assumed", "citation": "Consequence only: CISA ICSA-26-069-03 (CVE-2026-3611), a reachable BMS controller can be controlled. That the vendor can reach the BMS, and the 5 min attacker delay, are assumed"},
+    {"source": "ups",      "target": "tower",    "type": "power",    "delay_min": 0, "tier": "assumed"},
+    {"source": "ups",      "target": "network",  "type": "power",    "delay_min": 0, "tier": "assumed"},
+    {"source": "tower",    "target": "chillers", "type": "cooling",  "delay_min": 0, "tier": "assumed"},
+    {"source": "ups",      "target": "pdu",      "type": "power",    "delay_min": 0, "tier": "assumed"},
+    {"source": "network",  "target": "bms",      "type": "control",  "delay_min": 0, "tier": "assumed"},
+    {"source": "bms",      "target": "chillers", "type": "control",  "delay_min": 0, "tier": "assumed"},
+    {"source": "pdu",      "target": "chillers", "type": "power",    "delay_min": 0, "tier": "assumed"},
+    {"source": "chillers", "target": "air",      "type": "cooling",  "delay_min": 2, "tier": "assumed"},
+    {"source": "pdu",      "target": "racks",    "type": "power",    "delay_min": 0, "tier": "assumed"},
+    {"source": "sensors",  "target": "bms",      "type": "data",     "delay_min": 0, "tier": "assumed", "hard": false},
+    {"source": "air",      "target": "racks",    "type": "cooling",  "delay_min": 4, "tier": "assumed"},
+    {"source": "racks",    "target": "sla",      "type": "contract", "delay_min": 0, "tier": "assumed"},
+    {"source": "network",  "target": "sla_net",  "type": "contract", "delay_min": 0, "tier": "assumed"}
+  ],
+  "slas": [
+    {"id": "tenant_a", "node": "sla",     "mrc": 50000, "method": "stepped",  "allowance_min": 43.2, "step_pct": 5, "step_min": 30, "cap_pct": 100, "tier": "assumed"},
+    {"id": "network",  "node": "sla_net", "mrc": 10000, "method": "pro_rata", "allowance_min": 4.32, "cap_pct": 100, "tier": "assumed"}
+  ],
+  "repair_min": 180,
+  "actions": [
+    {"id": "start_ch2", "label": "Start standby chiller (CH-2)", "target_node": "chillers", "duration_min": 5,  "tier": "assumed"},
+    {"id": "rental",    "label": "Dispatch rental chiller",      "target_node": "chillers", "duration_min": 90, "tier": "assumed"}
+  ]
+}
